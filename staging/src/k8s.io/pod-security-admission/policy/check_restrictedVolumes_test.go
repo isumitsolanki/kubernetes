@@ -95,3 +95,15 @@ func TestRestrictedVolumes(t *testing.T) {
 		})
 	}
 }
+
+func TestRestrictedVolumes_imageVolumeAllowed(t *testing.T) {
+	pod := &corev1.Pod{Spec: corev1.PodSpec{
+		Volumes: []corev1.Volume{
+			{Name: "data", VolumeSource: corev1.VolumeSource{Image: &corev1.ImageVolumeSource{Reference: "registry.k8s.io/pause:latest"}}},
+		},
+	}}
+	result := restrictedVolumes_1_0(&pod.ObjectMeta, &pod.Spec)
+	if !result.Allowed {
+		t.Fatalf("expected image volume to be allowed under restricted, got reason=%q detail=%q", result.ForbiddenReason, result.ForbiddenDetail)
+	}
+}
